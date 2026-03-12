@@ -17,10 +17,16 @@ export const getAllCourse = createAsyncThunk(
 
       return response.data.courses;
     } catch (error) {
-      toast.error("Failed to get the courses");
-      return rejectWithValue(
-        error?.response?.data?.message || "Error fetching courses",
-      );
+      try {
+        // retry after 3 seconds (helps if Render backend is sleeping)
+        await new Promise((res) => setTimeout(res, 3000));
+
+        const retryResponse = await axiosInstance.get("/course");
+        return retryResponse.data.courses;
+      } catch (err) {
+        toast.error("Failed to get the courses");
+        return rejectWithValue(err?.response?.data?.message);
+      }
     }
   },
 );
