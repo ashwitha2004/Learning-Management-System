@@ -7,19 +7,23 @@ const initialState ={
     courseData: []
 }
 
-export const getAllCourse = createAsyncThunk("/course/get", async ()=>{
+export const getAllCourse = createAsyncThunk(
+  "/course/get",
+  async (_, { rejectWithValue }) => {
     try {
-        const response=axiosInstance.get("/course");
-        toast.promise(response, {
-            loading:"loading course data ...",
-            success:"courses loaded sucessfully",
-            error:"Failed to get the courses",
-        });
-        return (await response).data.courses;
+      const response = await axiosInstance.get("/course");
+
+      toast.success("Courses loaded successfully");
+
+      return response.data.courses;
     } catch (error) {
-        toast.error(error?.response?.data?.message);    
+      toast.error("Failed to get the courses");
+      return rejectWithValue(
+        error?.response?.data?.message || "Error fetching courses",
+      );
     }
-})
+  },
+);
 
 export const createNewCourse= createAsyncThunk("/course/create", async(data)=>{
     try {
