@@ -3,6 +3,9 @@ dotenv.config();
 
 import connectionToDB from "./config/dbConnection.js";
 import app from "./app.js";
+app.get("/", (req, res) => {
+  res.send("LMS Backend is running successfully 🚀");
+});
 
 const PORT = process.env.PORT || 5000;
 
