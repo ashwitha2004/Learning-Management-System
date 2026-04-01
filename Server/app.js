@@ -24,11 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://learning-management-system-theta-lilac.vercel.app",
-    ],
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    origin: "http://localhost:5173",
     credentials: true,
   }),
 );
@@ -45,9 +41,9 @@ app.use('/api/v1/user', userRoutes)
 app.use('/api/v1/course', courseRoutes)
 app.use('/api/v1/payments', paymentRoutes)
 app.use('/api/v1', miscRoutes);
-app.all('*',(_req,res)=>{
-    res.status(404).send('OOPS!!  404 page not found ')
-})
+app.get("/", (req, res) => {
+  res.send("Backend is running 🚀");
+});
 app.use(errorMiddlware);
 
 export default app;
