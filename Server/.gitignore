@@ -1,0 +1,7 @@
+# Secret
+.env
+node_modules
+
+# runtime upload staging (Multer writes here before forwarding to Cloudinary)
+uploads/*
+!uploads/.gitkeep
