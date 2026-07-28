@@ -6,3 +6,7 @@ Thumbs.db
 ~$*.doc*
 ~$*.xls*
 ~$*.ppt*
+
+# Personal notes/docs — not part of the project source
+LMS_Interview_Preparation.docx
+LMS_Project_Documentation.docx
