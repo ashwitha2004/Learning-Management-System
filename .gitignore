@@ -10,3 +10,6 @@ Thumbs.db
 # Personal notes/docs — not part of the project source
 LMS_Interview_Preparation.docx
 LMS_Project_Documentation.docx
+
+# Personal Claude Code settings — not shared with collaborators
+.claude/settings.local.json
