@@ -98,7 +98,7 @@ export const verifySubscription =asyncHandler(async(req, res, next)=>{
                                                             .digest('hex')
                                   
         if (generateSignature !== razorpay_signature) {
-            return next(createError(400, "payment not verified , please try again"))
+            return next(new AppError("payment not verified , please try again", 400))
         }
       
         await Payment.create({
