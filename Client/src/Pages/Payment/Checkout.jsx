@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { BiRupee } from "react-icons/bi";
 import { useDispatch, useSelector } from "react-redux";
@@ -14,6 +14,9 @@ function Checkout() {
     const razorpayKey = useSelector((state) => state?.razorpay?.key);
     const subscription_id = useSelector((state) => state?.razorpay?.subscription_id);
     const userData = useSelector((state) => state?.auth?.data);
+    const isLoggedIn = useSelector((state) => state?.auth?.isLoggedIn);
+    const [isPageLoading, setIsPageLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const paymentDetails = {
         razorpay_payment_id: "",
         razorpay_subscription_id: "",
@@ -22,10 +25,17 @@ function Checkout() {
 
     async function handleSubscription(e) {
         e.preventDefault();
+        if (isSubmitting) return;
         if(!razorpayKey || !subscription_id) {
-            toast.error("Something went wrong");
+            toast.error(
+                isLoggedIn
+                    ? "Couldn't set up checkout — please refresh and try again"
+                    : "Please log in before subscribing"
+            );
+            if (!isLoggedIn) navigate("/login");
             return;
         }
+        setIsSubmitting(true);
         const options = {
             key: razorpayKey,
             subscription_id: subscription_id,
@@ -39,7 +49,11 @@ function Checkout() {
             theme: {
                 color: '#F37258'
             },
-            
+            modal: {
+                ondismiss: function () {
+                    setIsSubmitting(false);
+                }
+            },
             handler: async function (response) {
                 paymentDetails.razorpay_payment_id = response.razorpay_payment_id;
                 paymentDetails.razorpay_signature = response.razorpay_signature;
@@ -49,6 +63,7 @@ function Checkout() {
 
                 const res = await dispatch(verifyUserPayment(paymentDetails));
                 // console.log(res);
+                setIsSubmitting(false);
                 res?.payload?.success ? navigate("/checkout/success") : navigate("/checkout/fail");
             }
         }
@@ -57,8 +72,10 @@ function Checkout() {
     }
 
     async function load() {
+        setIsPageLoading(true);
         await dispatch(getRazorPayId());
         await dispatch(purchaseCourseBundle());
+        setIsPageLoading(false);
     }
 
     useEffect(() => {
@@ -91,8 +108,12 @@ function Checkout() {
                             <p>100% refund on cancellation</p>
                             <p>* Terms and conditions applied *</p>
                         </div>
-                        <button type="submit" className="bg-yellow-500 hover:bg-yellow-600 transition-all ease-in-out duration-300 absolute bottom-0 w-full left-0 text-xl font-bold rounded-bl-lg rounded-br-lg py-2">
-                            Buy now
+                        <button
+                            type="submit"
+                            disabled={isPageLoading || isSubmitting}
+                            className="bg-yellow-500 hover:bg-yellow-600 disabled:opacity-60 disabled:cursor-not-allowed transition-all ease-in-out duration-300 absolute bottom-0 w-full left-0 text-xl font-bold rounded-bl-lg rounded-br-lg py-2"
+                        >
+                            {isPageLoading ? "Loading..." : isSubmitting ? "Processing..." : "Buy now"}
                         </button>
                     </div>
                 </div>

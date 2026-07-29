@@ -15,6 +15,7 @@ function Signup(){
 
 
     const [prevImage, setPrevImage]=useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [signupData, setSignupData]=useState({
         fullName:"",
@@ -76,24 +77,29 @@ function Signup(){
             return;
         }
 
+        if (isSubmitting) return;
+
         const formData = new FormData();
         formData.append("fullName", signupData.fullName);
         formData.append("email", signupData.email);
         formData.append("password", signupData.password);
         formData.append("avatar", signupData.avatar);
 
-
-        //dispatch create account action
-       const response = await dispatch(creatAccount(formData));
-        if(response?.payload?.success){
-            navigate("/");
-            setSignupData({
-                fullName:"",
-                email:"",
-                password:"",
-                avatar:"",
-            })
-            setPrevImage("");
+        setIsSubmitting(true);
+        try {
+            const response = await dispatch(creatAccount(formData));
+            if(response?.payload?.success){
+                navigate("/");
+                setSignupData({
+                    fullName:"",
+                    email:"",
+                    password:"",
+                    avatar:"",
+                })
+                setPrevImage("");
+            }
+        } finally {
+            setIsSubmitting(false);
         }
     }
     return(
@@ -158,8 +164,12 @@ function Signup(){
                                 value={signupData.password}
                              />
                         </div>
-                        <button  type="submit" className=" mt-2 bg-yellow-600 hover:bg-yellow-500 py-2 font-semibold text-lg cursor-pointer transition-all ease-in-out duration-300  rounded-sm">
-                                Create Account
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="mt-2 bg-yellow-600 hover:bg-yellow-500 disabled:opacity-60 disabled:cursor-not-allowed py-2 font-semibold text-lg cursor-pointer transition-all ease-in-out duration-300 rounded-sm"
+                        >
+                                {isSubmitting ? "Creating account..." : "Create Account"}
                         </button>
                         <p className="text-center">
                             Already have an account ? <Link to="/login" className=" link  text-accent cursor-pointer">Login</Link>

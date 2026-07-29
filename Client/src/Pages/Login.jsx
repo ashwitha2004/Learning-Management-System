@@ -17,6 +17,7 @@ function Login(){
         password:"",
         rememberMe:false,
     });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     function handleUserInput(e){
         const{name, value, type, checked}=e.target;
@@ -32,17 +33,21 @@ function Login(){
             toast.error("Please fill all the details ");
             return;
         }
+        if (isSubmitting) return;
 
-
-        //dispatch create account action
-       const response = await dispatch(login(loginData));
-        if(response?.payload?.success){
-            navigate("/");
-            setloginData({
-                email:"",
-                password:"",
-                rememberMe:false,
-            })
+        setIsSubmitting(true);
+        try {
+            const response = await dispatch(login(loginData));
+            if(response?.payload?.success){
+                navigate("/");
+                setloginData({
+                    email:"",
+                    password:"",
+                    rememberMe:false,
+                })
+            }
+        } finally {
+            setIsSubmitting(false);
         }
     }
     return(
@@ -90,8 +95,12 @@ function Login(){
                             <span>Remember me for 30 days</span>
                         </label>
 
-                        <button  type="submit" className=" mt-2 bg-yellow-600 hover:bg-yellow-500 py-2 font-semibold text-lg cursor-pointer transition-all ease-in-out duration-300  rounded-sm">
-                                Login
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="mt-2 bg-yellow-600 hover:bg-yellow-500 disabled:opacity-60 disabled:cursor-not-allowed py-2 font-semibold text-lg cursor-pointer transition-all ease-in-out duration-300 rounded-sm"
+                        >
+                                {isSubmitting ? "Logging in..." : "Login"}
                         </button>
 
                         <Link to={"/forget-password"}>
