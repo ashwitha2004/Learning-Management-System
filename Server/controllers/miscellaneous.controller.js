@@ -15,16 +15,17 @@ export const contactUs = asyncHandler(async (req, res, next) => {
       return next(new AppError('Name, Email, Message are required'));
     }
   
-    try {
-      const subject = 'Contact Us Form';
-      const textMessage = `${name} - ${email} <br /> ${message}`;
-  
-      await sendEmail(process.env.CONTACT_US_EMAIL, subject, textMessage);
-    } catch (error) {
-      console.log(error);
-      return next(new AppError(error.message, 400));
-    }
-  
+    const subject = 'Contact Us Form';
+    const textMessage = `${name} - ${email} <br /> ${message}`;
+
+    // Best-effort: don't fail the user-facing request if the mail provider
+    // is slow/unreachable (e.g. blocked outbound SMTP on some hosts) — log
+    // it and move on rather than surfacing an error for something the user
+    // has no way to act on.
+    sendEmail(process.env.CONTACT_US_EMAIL, subject, textMessage).catch((error) => {
+      console.error('Contact form email failed to send:', error.message || error);
+    });
+
     res.status(200).json({
       success: true,
       message: 'Your request has been submitted successfully',

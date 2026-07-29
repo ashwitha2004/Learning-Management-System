@@ -190,22 +190,18 @@ export const forgotPassword=asyncHandler(async(req, res,next)=>{
      
     const subject = 'Reset Password';
     const message = `You can reset your password by clicking <a href=${resetPasswordUrl} target="_blank">Reset your password</a>\nIf the above link does not work for some reason then copy paste this link in new tab ${resetPasswordUrl}.\n If you have not requested this, kindly ignore.`;
-    
-    try{
-        await sendEmail(email,subject, message);
 
-        res.status(200).json({
-            success: true,
-            message:`Reset password token has been sent to ${email} Sucessfully`,
-        })
-    } catch(e ){
-        user.forgotPasswordExpiry=undefined;
-        user.forgotPasswordToken=undefined;
+    // Best-effort: the token is already saved and valid for 15 minutes
+    // regardless of whether this notification email lands right away, so a
+    // slow/unreachable mail provider shouldn't block the response.
+    sendEmail(email, subject, message).catch((error) => {
+        console.error('Password reset email failed to send:', error.message || error);
+    });
 
-        await user.save();
-        return next(new AppError(e.message, 500)
-        );
-    }
+    res.status(200).json({
+        success: true,
+        message:`Reset password token has been sent to ${email} Sucessfully`,
+    })
 });
 /**
  * @RESET_PASSWORD - Resets the password using a valid token

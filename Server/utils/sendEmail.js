@@ -1,24 +1,30 @@
 import nodemailer from "nodemailer";
 
-// async..await is not allowed in global scope, must use a wrapper
+/**
+ * @sendEmail - Sends transactional email via SMTP.
+ * Short timeouts are set deliberately: on hosts that block/hang outbound
+ * SMTP (Render's free tier included), this fails fast instead of hanging
+ * the request for a minute, so callers can treat it as best-effort.
+ */
 const sendEmail = async function (email, subject, message) {
-  // create reusable transporter object using the default SMTP transport
-  let transporter = nodemailer.createTransport({
+  const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: process.env.SMTP_PORT,
-    secure: false, // true for 465, false for other ports
+    secure: false,
     auth: {
       user: process.env.SMTP_USERNAME,
       pass: process.env.SMTP_PASSWORD,
     },
+    connectionTimeout: 8000,
+    greetingTimeout: 8000,
+    socketTimeout: 8000,
   });
 
-  // send mail with defined transport object
   await transporter.sendMail({
-    from: process.env.SMTP_FROM_EMAIL, // sender address
-    to: email, // user email
-    subject: subject, // Subject line
-    html: message, // html body
+    from: process.env.SMTP_FROM_EMAIL,
+    to: email,
+    subject: subject,
+    html: message,
   });
 };
 
